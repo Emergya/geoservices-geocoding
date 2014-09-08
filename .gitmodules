@@ -1,0 +1,3 @@
+[submodule "GoFleetLSServer"]
+	path = GoFleetLSServer
+	url = https://github.com/Emergya/GoFleetLSServer.git
