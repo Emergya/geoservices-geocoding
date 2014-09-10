@@ -794,10 +794,10 @@
             <str name="defType">edismax</str>
             <int name="rows">10</int>
             <str name="qf">
-                name^30 type^20 locality^10 address^2
+                type^20  streetName^30 portal^30 locality^70
             </str>
             <str name="pf">
-                name~2^50 type~2^40 locality~2^30 address~2^20
+                type~2^40  streetName~2^50 portal~2^50 locality~2^70
             </str>
             <int name="qs">1</int>
             <int name="ps">2</int>
