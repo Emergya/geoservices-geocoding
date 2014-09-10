@@ -55,7 +55,10 @@ public class PortalsGeocodingHandler implements GeocodingHandler {
 
     @Override
     public List<AbstractResponseParametersType> geocoding(GeocodeRequestType param) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+         List<AbstractResponseParametersType> response = new ArrayList<AbstractResponseParametersType>();
+         
+         
+         return response;
     }
 
     @Override
