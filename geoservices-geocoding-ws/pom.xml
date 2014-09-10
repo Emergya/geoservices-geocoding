@@ -39,6 +39,7 @@
     </dependencies>
 
     <build>
+        <finalName>openls</finalName>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
