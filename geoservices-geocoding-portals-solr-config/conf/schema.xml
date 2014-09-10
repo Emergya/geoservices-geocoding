@@ -117,7 +117,7 @@
         <field name="type" type="text_es" indexed="true" stored="true" multiValued="false" />
         <field name="typeF" type="string" indexed="true" stored="true" multiValued="false" />
         <field name="streetName" type="text_es" indexed="true" stored="true" multiValued="false" />
-	<field name="portal" type="int" indexed="true" stored="true" multiValued="false" />
+	      <field name="portal" type="int" indexed="true" stored="true" multiValued="false" />
         <field name="postalCode" type="string" indexed="true" stored="true" multiValued="false" />
         <field name="localityCode" type="string" indexed="true" stored="true" multiValued="false" />
         <field name="locality" type="text_es" indexed="true" stored="true" multiValued="false" />

@@ -3,3 +3,5 @@
 *~
 *.orig
 **/nb-configuration.xml
+/geoservices-geocoding-portals-solr-config/data/
+/geoservices-geocoding-portals-solr-config/conf/dataimport-dev.properties
