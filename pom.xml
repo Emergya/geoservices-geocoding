@@ -22,7 +22,7 @@
         <module>GoFleetLSServer/gofleet-base</module>
         <module>GoFleetLSServer/gofleet</module>
         <module>geoservices-geocoding-ws</module>
-        <module>geoservices-geocoding-oracle-portals</module>
+        <module>geoservices-geocoding-portals</module>
     </modules>
     
     <properties>
