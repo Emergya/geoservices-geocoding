@@ -40,6 +40,15 @@
 
     <build>
         <finalName>openls</finalName>
+        <filters>
+            <filter>src/main/filters/${profile.properties}</filter>
+        </filters>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -100,5 +109,4 @@
             </plugin>
         </plugins>
     </build>
-
 </project>
