@@ -31,4 +31,25 @@
         <maven.compiler.source>1.7</maven.compiler.source>
         <maven.compiler.target>1.7</maven.compiler.target>
     </properties>
+    
+    <profiles>
+        <profile>
+            <id>devel</id>  
+            <properties>
+                <profile.properties>devel.properties</profile.properties>
+            </properties>
+        </profile>
+        <profile>
+            <id>devel-telef</id>          
+            <properties>
+                <profile.properties>devel-telef.properties</profile.properties>
+            </properties>
+        </profile>
+        <profile>
+            <id>prod</id>                          
+            <properties>
+                <profile.properties>prod.properties</profile.properties>
+            </properties>
+        </profile>
+    </profiles>
 </project>
