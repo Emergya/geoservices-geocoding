@@ -1087,21 +1087,21 @@
     -->
     </requestHandler>
 
-    <requestHandler name="/dataimport-dev" class="org.apache.solr.handler.dataimport.DataImportHandler">
+    <requestHandler name="dataimport-devel" class="org.apache.solr.handler.dataimport.DataImportHandler">
         <lst name="defaults">
-            <str name="config">db-portal-config-dev.xml</str>
+            <str name="config">import/db-portal-config-devel.xml</str>
         </lst>
     </requestHandler>
 
-    <requestHandler name="/dataimport-dev-tefel" class="org.apache.solr.handler.dataimport.DataImportHandler">
+    <requestHandler name="/dataimport-devel-telef" class="org.apache.solr.handler.dataimport.DataImportHandler">
         <lst name="defaults">
-            <str name="config">db-portal-config-dev-telef.xml</str>
+            <str name="config">import/db-portal-config-devel-telef.xml</str>
         </lst>
     </requestHandler>
 
    <requestHandler name="/dataimport-prod" class="org.apache.solr.handler.dataimport.DataImportHandler">
         <lst name="defaults">
-            <str name="config">db-portal-config-prod.xml</str>
+            <str name="config">import/db-portal-config-prod.xml</str>
         </lst>
     </requestHandler>
 
