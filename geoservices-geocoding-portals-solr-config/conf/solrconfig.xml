@@ -1087,7 +1087,7 @@
     -->
     </requestHandler>
 
-    <requestHandler name="dataimport-devel" class="org.apache.solr.handler.dataimport.DataImportHandler">
+    <requestHandler name="/dataimport-devel" class="org.apache.solr.handler.dataimport.DataImportHandler">
         <lst name="defaults">
             <str name="config">import/db-portal-config-devel.xml</str>
         </lst>
