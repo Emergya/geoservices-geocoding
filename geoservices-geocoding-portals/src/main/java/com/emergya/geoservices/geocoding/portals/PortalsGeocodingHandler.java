@@ -146,7 +146,7 @@ public class PortalsGeocodingHandler implements GeocodingHandler {
 
         Point point = transformPoint(coordinates.get(0), coordinates.get(1), inputSrsName, EPSG_4326);
 
-        String posStr = point.getX() + ", " + point.getY();
+        String posStr = point.getY() + ", " + point.getX();
 
         solrQuery.set("q", "{!func}geodist()");
         solrQuery.set("fq", String.format(Locale.ENGLISH, "{!geofilt  d=%f}", MAX_KM_DISTANCE_REVERSE_GEOCODING));
