@@ -6,7 +6,7 @@
         <artifactId>geoservices-geocoding</artifactId>
         <version>0.1</version>
     </parent>
-    <artifactId>geoservices-geocoding-oracle-portals</artifactId>
+    <artifactId>geoservices-geocoding-portals</artifactId>
     <packaging>jar</packaging>  
     <name>Geoservices: Geocoding using Portals layer</name> 
     

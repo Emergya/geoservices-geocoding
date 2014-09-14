@@ -1,7 +1,11 @@
-**/target/
-*.bak
+.classpath
+.project
+*/target/
 *~
+*.bak
 *.orig
-**/nb-configuration.xml
+*/nb-configuration.xml
+**/context.xml
+**/.settings/
 /geoservices-geocoding-portals-solr-config/data/
-/geoservices-geocoding-portals-solr-config/conf/dataimport-dev.properties
+/geoservices-geocoding-portals-solr-config/conf/dataimport-devel.properties
