@@ -3,6 +3,7 @@
 */target/
 *~
 *.bak
+*~
 *.orig
 */nb-configuration.xml
 **/context.xml
