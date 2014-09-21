@@ -22,7 +22,7 @@ For more details refer to URL : http://wiki.apache.org/solr/DataImportHandler
 
 -->
 <dataConfig>
-	<dataSource name="oracle_jdbc" driver="oracle.jdbc.driver.OracleDriver" url="jdbc:oracle:thin:@oracle-apps-11g:1521:geostelef" user="devel" password="emergya" batchSize="100" />
+	<dataSource name="oracle_jdbc" driver="oracle.jdbc.driver.OracleDriver" url="jdbc:oracle:thin:@192.168.5.192:1521:PROTCIV" user="PGIS" password="PGIS" batchSize="100" />
 	<document name="p">
 		<entity name="portalero" pk="ID" dataSource="oracle_jdbc" 
 			query="SELECT ROWNUM ID, p.TIPO_VIA TYPE, p.NOMBRE STREET_NAME, p.COD_MUNI LOCALITY_CODE, p.NUM_PORTAL PORTAL, mun.NAME LOCALITY, p.DDPP POSTAL_CODE, (REGEXP_REPLACE(g.Y,',','.') ||','|| REGEXP_REPLACE(g.X,',','.')) LOCATION FROM PORTALERO p, TABLE(SDO_UTIL.GETVERTICES(MDSYS.SDO_CS.TRANSFORM(p.geometry,4326))) g, CODMUN mun WHERE p.COD_MUNI = mun.COD"

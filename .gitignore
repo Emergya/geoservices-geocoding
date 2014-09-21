@@ -10,3 +10,4 @@
 **/.settings/
 /geoservices-geocoding-portals-solr-config/data/
 /geoservices-geocoding-portals-solr-config/conf/dataimport-devel.properties
+/geoservices-geocoding-portals-solr-config/conf/dataimport-prod.properties
