@@ -9,5 +9,7 @@
 **/context.xml
 **/.settings/
 /geoservices-geocoding-portals-solr-config/data/
-/geoservices-geocoding-portals-solr-config/conf/dataimport-devel.properties
-/geoservices-geocoding-portals-solr-config/conf/dataimport-prod.properties
+/geoservices-geocoding-portals-solr-config/conf/dataimport-*
+/geoservices-geocoding-localities-solr-config/data/
+/geoservices-geocoding-localities-solr-config/conf/dataimport-*
+
