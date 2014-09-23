@@ -39,7 +39,7 @@
     </dependencies>
 
     <build>
-        <finalName>geoservices-geocoding-ws</finalName>
+        <finalName>openls</finalName>
         <filters>
             <filter>src/main/filters/${profile.properties}</filter>
         </filters>
