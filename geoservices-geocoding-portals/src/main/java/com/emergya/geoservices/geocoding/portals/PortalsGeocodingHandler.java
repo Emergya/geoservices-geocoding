@@ -59,11 +59,10 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class PortalsGeocodingHandler implements GeocodingHandler {
-    
-    
-    private static final String EPSG_4326 = "EPSG:4326";    
+
+    private static final String EPSG_4326 = "EPSG:4326";
     private static final String EPSG_23030 = "EPSG:23030";
-    
+
     @Value("${geoservices.geocoding.portals.solrUrl}")
     private String SOLR_URL;
 
@@ -86,10 +85,10 @@ public class PortalsGeocodingHandler implements GeocodingHandler {
         if (StringUtils.isBlank(inputAddress)) {
             return response;
         }
-        
+
         // TODO: #108119 Parsing direction to get particles in a less wrong way.
         inputAddress = inputAddress.replaceAll(",", "");
-       
+
         SolrQuery solrQuery = new SolrQuery();
 
         solrQuery.set("q", inputAddress);
@@ -105,10 +104,10 @@ public class PortalsGeocodingHandler implements GeocodingHandler {
 
         GeocodeResponseType grt = new GeocodeResponseType();
         response.add(grt);
-        
-        List<GeocodeResponseListType> resultList = grt.getGeocodeResponseList();        
+
+        List<GeocodeResponseListType> resultList = grt.getGeocodeResponseList();
         grt.setGeocodeResponseList(resultList);
-        
+
         GeocodeResponseListType result = new GeocodeResponseListType();
         resultList.add(result);
 
@@ -130,7 +129,7 @@ public class PortalsGeocodingHandler implements GeocodingHandler {
             addresses.add(address);
 
         }
-        
+
         result.setNumberOfGeocodedAddresses(BigInteger.valueOf(addresses.size()));
 
         return response;
@@ -245,8 +244,14 @@ public class PortalsGeocodingHandler implements GeocodingHandler {
 
         Point transformPoint = transformPoint(Double.parseDouble(location[0]), Double.parseDouble(location[1]), EPSG_4326, srsName);
 
-        resultCoordinates.add(transformPoint.getX());
-        resultCoordinates.add(transformPoint.getY());
+        if (srsName.equals(EPSG_4326)) {
+            resultCoordinates.add(transformPoint.getY());
+            resultCoordinates.add(transformPoint.getX());
+
+        } else {
+            resultCoordinates.add(transformPoint.getX());
+            resultCoordinates.add(transformPoint.getY());
+        }
 
         pos.setValue(resultCoordinates);
 
