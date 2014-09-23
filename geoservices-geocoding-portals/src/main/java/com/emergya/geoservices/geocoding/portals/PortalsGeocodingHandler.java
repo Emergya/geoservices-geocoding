@@ -242,7 +242,7 @@ public class PortalsGeocodingHandler implements GeocodingHandler {
 
         String[] location = ((String) doc.get("location")).split(",");
 
-        Point transformPoint = transformPoint(Double.parseDouble(location[0]), Double.parseDouble(location[1]), EPSG_4326, srsName);
+        Point transformPoint = transformPoint(Double.parseDouble(location[1]), Double.parseDouble(location[0]), EPSG_4326, srsName);
 
         if (srsName.equals(EPSG_4326)) {
             resultCoordinates.add(transformPoint.getY());
