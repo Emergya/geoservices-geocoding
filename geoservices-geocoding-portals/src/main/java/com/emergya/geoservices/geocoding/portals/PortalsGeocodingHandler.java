@@ -1,20 +1,17 @@
 package com.emergya.geoservices.geocoding.portals;
 
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.CoordinateSequence;
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.GeometryFactory;
-import com.vividsolutions.jts.geom.Point;
-import com.vividsolutions.jts.geom.impl.CoordinateArraySequence;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import javax.xml.bind.JAXBElement;
 import javax.xml.namespace.QName;
+
 import net.opengis.gml.v_3_1_1.DirectPositionType;
 import net.opengis.gml.v_3_1_1.PointType;
 import net.opengis.xls.v_1_2_0.AbstractResponseParametersType;
@@ -34,6 +31,7 @@ import net.opengis.xls.v_1_2_0.ReverseGeocodeResponseType;
 import net.opengis.xls.v_1_2_0.ReverseGeocodedLocationType;
 import net.opengis.xls.v_1_2_0.StreetAddressType;
 import net.opengis.xls.v_1_2_0.StreetNameType;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServer;
@@ -53,6 +51,16 @@ import org.opengis.referencing.operation.TransformException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.CoordinateSequence;
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.geom.Point;
+import com.vividsolutions.jts.geom.Polygon;
+import com.vividsolutions.jts.geom.impl.CoordinateArraySequence;
+import com.vividsolutions.jts.io.ParseException;
+import com.vividsolutions.jts.io.WKTReader;
+
 /**
  *
  * @author lroman
@@ -65,6 +73,8 @@ public class PortalsGeocodingHandler implements GeocodingHandler {
 
     @Value("${geoservices.geocoding.portals.solrUrl}")
     private String SOLR_URL;
+    @Value("${geoservices.geocoding.portals.solrUrlMun}")
+    private String SOLR_URL_MUN;
 
     private static final double MAX_KM_DISTANCE_REVERSE_GEOCODING = 0.01;
 
@@ -96,7 +106,7 @@ public class PortalsGeocodingHandler implements GeocodingHandler {
 
         QueryResponse solrResult;
         try {
-            solrResult = this.getSolrServer().query(solrQuery);
+            solrResult = this.getSolrServer(this.SOLR_URL).query(solrQuery);
         } catch (SolrServerException ex) {
             Logger.getLogger(PortalsGeocodingHandler.class.getName()).log(Level.SEVERE, null, ex);
             throw new RuntimeException(ex);
@@ -138,6 +148,7 @@ public class PortalsGeocodingHandler implements GeocodingHandler {
     @Override
     public List<AbstractResponseParametersType> reverseGeocode(ReverseGeocodeRequestType param) {
         SolrQuery solrQuery = new SolrQuery();
+        SolrQuery solrQueryMun = new SolrQuery();
 
         // TODO: We need to transform the point to LatLong before requesting them.
         String inputSrsName = param.getPosition().getPoint().getSrsName();
@@ -155,7 +166,7 @@ public class PortalsGeocodingHandler implements GeocodingHandler {
 
         QueryResponse solrResult;
         try {
-            solrResult = this.getSolrServer().query(solrQuery);
+            solrResult = this.getSolrServer(this.SOLR_URL).query(solrQuery);
         } catch (SolrServerException ex) {
             Logger.getLogger(PortalsGeocodingHandler.class.getName()).log(Level.SEVERE, null, ex);
             throw new RuntimeException(ex);
@@ -168,14 +179,37 @@ public class PortalsGeocodingHandler implements GeocodingHandler {
         response.add(grt);
 
         SolrDocumentList solrDocsInfo = solrResult.getResults();
+        int numResults = solrDocsInfo.size();
+        if(numResults > 0){
+        	for (SolrDocument doc : solrDocsInfo) {
+                ReverseGeocodedLocationType result = new ReverseGeocodedLocationType();
 
-        for (SolrDocument doc : solrDocsInfo) {
-            ReverseGeocodedLocationType result = new ReverseGeocodedLocationType();
-
-            result.setSearchCentreDistance(getDocDistance(doc));
-            result.setPoint(getDocPoint(doc, inputSrsName));
-            result.setAddress(getDocAddress(doc));
-            resultList.add(result);
+                result.setSearchCentreDistance(getDocDistance(doc));
+                result.setPoint(getDocPoint(doc, inputSrsName));
+                result.setAddress(getDocAddress(doc));
+                resultList.add(result);
+            }
+        }else{
+        	solrQueryMun.set("q", "*:*");
+        	solrQueryMun.set("wt", "json");
+        	solrQueryMun.set("fq", String.format(Locale.ENGLISH, "geom:\"Intersects(%f %f)\"", point.getX(), point.getY()));
+            solrQueryMun.set("sort", "score asc");
+            QueryResponse solrResultMun;
+            try {
+                solrResultMun = this.getSolrServer(this.SOLR_URL_MUN).query(solrQueryMun);
+            } catch (SolrServerException ex) {
+                Logger.getLogger(PortalsGeocodingHandler.class.getName()).log(Level.SEVERE, null, ex);
+                throw new RuntimeException(ex);
+            }
+            SolrDocumentList solrDocsInfoMun = solrResultMun.getResults();
+            for (SolrDocument doc : solrDocsInfoMun) {
+                ReverseGeocodedLocationType result = new ReverseGeocodedLocationType();
+                
+                result.setSearchCentreDistance(getDocDistanceMun(doc, point));
+                result.setPoint(getDocPointMun(point, doc, inputSrsName));
+                result.setAddress(getDocAdressMun(doc));
+                resultList.add(result);
+            }
         }
 
         return response;
@@ -183,11 +217,8 @@ public class PortalsGeocodingHandler implements GeocodingHandler {
 
     private SolrServer solrServer;
 
-    private SolrServer getSolrServer() {
-        if (this.solrServer == null) {
-            this.solrServer = new HttpSolrServer(SOLR_URL);
-        }
-
+    private SolrServer getSolrServer(String solr_url) {
+        this.solrServer = new HttpSolrServer(solr_url);
         return this.solrServer;
 
     }
@@ -229,6 +260,19 @@ public class PortalsGeocodingHandler implements GeocodingHandler {
 
         return address;
     }
+    
+    private AddressType getDocAdressMun(SolrDocument doc) {
+    	AddressType address = new AddressType();
+        address.setCountryCode("ES");
+        address.setLanguage("ES");
+        List<NamedPlaceType> places = new ArrayList<NamedPlaceType>();
+        NamedPlaceType place = new NamedPlaceType();
+        place.setType(NamedPlaceClassification.MUNICIPALITY);
+        place.setValue((String) doc.get("name"));
+        places.add(place);
+        address.setPlace(places);
+        return address;
+    }
 
     private PointType getDocPoint(SolrDocument doc, String srsName) {
         // We build the result point
@@ -259,12 +303,51 @@ public class PortalsGeocodingHandler implements GeocodingHandler {
 
         return p;
     }
+    
+    private PointType getDocPointMun(Point p, SolrDocument doc, String srsName){
+    	PointType pointRes = new PointType();
+    	pointRes.setSrsName(srsName);
+    	
+    	DirectPositionType pos = new DirectPositionType();
+        List<Double> resultCoordinates = new ArrayList<Double>();
+        
+        if (srsName.equals(EPSG_4326)) {
+            resultCoordinates.add(p.getY());
+            resultCoordinates.add(p.getX());
+
+        } else {
+            resultCoordinates.add(p.getX());
+            resultCoordinates.add(p.getY());
+        }
+        
+        pos.setValue(resultCoordinates);
+        
+        pointRes.setPos(pos);
+    	
+    	return pointRes;
+    }
 
     private DistanceType getDocDistance(SolrDocument doc) {
         DistanceType distance = new DistanceType();
         // Score carries the distance.
         distance.setValue(BigDecimal.valueOf((Float) doc.get("score")));
         return distance;
+    }
+    
+    private DistanceType getDocDistanceMun(SolrDocument doc, Point p){
+    	DistanceType distance = new DistanceType();
+    	String str = (String)doc.get("geom");
+    	WKTReader reader = new WKTReader();
+    	Geometry g = null;
+		try {
+			g = reader.read(str);
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
+        Point centroid = g.getCentroid();
+        Double dist = centroid.distance(p);
+        distance.setValue(BigDecimal.valueOf(dist));
+    	return distance;
     }
 
     private Point transformPoint(double x, double y, String inputSRS, String outputSRS) {
