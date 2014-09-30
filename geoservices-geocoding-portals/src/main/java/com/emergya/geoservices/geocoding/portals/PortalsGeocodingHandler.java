@@ -1,9 +1,10 @@
 package com.emergya.geoservices.geocoding.portals;
 
+import com.emergya.geoservices.geocoding.portals.antlr4.PortalsLexer;
+import com.emergya.geoservices.geocoding.portals.antlr4.PortalsParser;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.logging.Level;
@@ -56,10 +57,14 @@ import com.vividsolutions.jts.geom.CoordinateSequence;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.Point;
-import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.geom.impl.CoordinateArraySequence;
 import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKTReader;
+import org.antlr.v4.runtime.ANTLRInputStream;
+import org.antlr.v4.runtime.BaseErrorListener;
+import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.RecognitionException;
+import org.antlr.v4.runtime.Recognizer;
 
 /**
  *
@@ -79,12 +84,12 @@ public class PortalsGeocodingHandler implements GeocodingHandler {
     private static final double MAX_KM_DISTANCE_REVERSE_GEOCODING = 0.01;
 
     @Override
-    public List<AbstractResponseParametersType> directory(DirectoryRequestType param) {
+    public List<AbstractResponseParametersType> directory(DirectoryRequestType param, int maxResponses) {
         throw new UnsupportedOperationException("Directory request not supported!"); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public List<AbstractResponseParametersType> geocoding(GeocodeRequestType param) {
+    public List<AbstractResponseParametersType> geocoding(GeocodeRequestType param, int maxResponses) {
         List<AbstractResponseParametersType> response = new ArrayList<AbstractResponseParametersType>();
 
         if (param.getAddress().isEmpty()) {
@@ -95,15 +100,28 @@ public class PortalsGeocodingHandler implements GeocodingHandler {
         if (StringUtils.isBlank(inputAddress)) {
             return response;
         }
+        
+        
 
-        // TODO: #108119 Parsing direction to get particles in a less wrong way.
-        inputAddress = inputAddress.replaceAll(",", "");
+        PortalsLexer lexer =  new PortalsLexer(new ANTLRInputStream(inputAddress));
+    	PortalsParser parser = new PortalsParser(new CommonTokenStream(lexer));
+        parser.addErrorListener(new BaseErrorListener(){
 
-        SolrQuery solrQuery = new SolrQuery();
-
-        solrQuery.set("q", inputAddress);
-        solrQuery.set("sort", "score desc");
-
+            @Override
+            public void syntaxError(Recognizer<?, ?> rcgnzr, Object o, int i, int i1, String string, RecognitionException re) {
+                // We do nothing.
+            }
+            
+        });
+        
+        SolrPortalQueryBuilder queryBuilder = new SolrPortalQueryBuilder();
+        parser.addParseListener(queryBuilder);
+        
+        parser.address();        
+        
+        SolrQuery solrQuery = queryBuilder.getResultQuery(maxResponses);
+        
+        
         QueryResponse solrResult;
         try {
             solrResult = this.getSolrServer(this.SOLR_URL).query(solrQuery);
@@ -146,7 +164,7 @@ public class PortalsGeocodingHandler implements GeocodingHandler {
     }
 
     @Override
-    public List<AbstractResponseParametersType> reverseGeocode(ReverseGeocodeRequestType param) {
+    public List<AbstractResponseParametersType> reverseGeocode(ReverseGeocodeRequestType param, int maxResponses) {
         SolrQuery solrQuery = new SolrQuery();
         SolrQuery solrQueryMun = new SolrQuery();
 
@@ -163,6 +181,12 @@ public class PortalsGeocodingHandler implements GeocodingHandler {
         solrQuery.set("sfield", "location");
         solrQuery.set("pt", posStr);
         solrQuery.set("sort", "score asc");
+        
+        if(maxResponses<=0) {
+            solrQuery.setRows(10);
+        } else {
+            solrQuery.setRows(maxResponses);
+        }
 
         QueryResponse solrResult;
         try {
