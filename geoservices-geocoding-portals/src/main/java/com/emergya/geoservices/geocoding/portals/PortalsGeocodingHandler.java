@@ -174,7 +174,12 @@ public class PortalsGeocodingHandler implements GeocodingHandler {
 
         Point point = transformPoint(coordinates.get(0), coordinates.get(1), inputSrsName, EPSG_4326);
 
-        String posStr = point.getY() + ", " + point.getX();
+        String posStr;
+        if(inputSrsName.equals(EPSG_4326)){
+            posStr = point.getY() + ", " + point.getX();
+        } else {
+            posStr = point.getX() + ", " + point.getY();
+        }
 
         solrQuery.set("q", "{!func}geodist()");
         solrQuery.set("fq", String.format(Locale.ENGLISH, "{!geofilt  d=%f}", MAX_KM_DISTANCE_REVERSE_GEOCODING));
@@ -310,7 +315,7 @@ public class PortalsGeocodingHandler implements GeocodingHandler {
 
         String[] location = ((String) doc.get("location")).split(",");
 
-        Point transformPoint = transformPoint(Double.parseDouble(location[1]), Double.parseDouble(location[0]), EPSG_4326, srsName);
+        Point transformPoint = transformPoint(Double.parseDouble(location[0]), Double.parseDouble(location[1]), EPSG_4326, srsName);
 
         if (srsName.equals(EPSG_4326)) {
             resultCoordinates.add(transformPoint.getY());
@@ -334,6 +339,8 @@ public class PortalsGeocodingHandler implements GeocodingHandler {
     	
     	DirectPositionType pos = new DirectPositionType();
         List<Double> resultCoordinates = new ArrayList<Double>();
+        
+        p= transformPoint(p.getX(), p.getY(), EPSG_4326, srsName);
         
         if (srsName.equals(EPSG_4326)) {
             resultCoordinates.add(p.getY());
