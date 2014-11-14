@@ -3,8 +3,8 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.emergya.geoservices</groupId>
-        <artifactId>geoservices-geocoding</artifactId>
-        <version>0.1</version>
+        <artifactId>geoservices-geocoding</artifactId>  
+        <version>0.2</version>
     </parent>
     <artifactId>geoservices-geocoding-portals</artifactId>
     <packaging>jar</packaging>  

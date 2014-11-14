@@ -72,6 +72,8 @@ import org.antlr.v4.runtime.Recognizer;
  */
 @Service
 public class PortalsGeocodingHandler implements GeocodingHandler {
+	
+	private static final Logger LOG = Logger.getLogger("org.gofleet");
 
     private static final String EPSG_4326 = "EPSG:4326";
     private static final String EPSG_23030 = "EPSG:23030";
@@ -80,6 +82,9 @@ public class PortalsGeocodingHandler implements GeocodingHandler {
     private String SOLR_URL;
     @Value("${geoservices.geocoding.portals.solrUrlMun}")
     private String SOLR_URL_MUN;
+    
+    @Value("${geoservices.geocoding.portals.useLonLat}")
+    private boolean USE_LON_LAT = false;
 
     private static final double MAX_KM_DISTANCE_REVERSE_GEOCODING = 0.01;
 
@@ -103,7 +108,7 @@ public class PortalsGeocodingHandler implements GeocodingHandler {
         
         
 
-        PortalsLexer lexer =  new PortalsLexer(new ANTLRInputStream(inputAddress));
+        PortalsLexer lexer =  new PortalsLexer(new ANTLRInputStream(inputAddress.trim()));
     	PortalsParser parser = new PortalsParser(new CommonTokenStream(lexer));
         parser.addErrorListener(new BaseErrorListener(){
 
@@ -171,11 +176,13 @@ public class PortalsGeocodingHandler implements GeocodingHandler {
         // TODO: We need to transform the point to LatLong before requesting them.
         String inputSrsName = param.getPosition().getPoint().getSrsName();
         List<Double> coordinates = param.getPosition().getPoint().getPos().getValue();
+        
+        
 
         Point point = transformPoint(coordinates.get(0), coordinates.get(1), inputSrsName, EPSG_4326);
-
+        
         String posStr;
-        if(inputSrsName.equals(EPSG_4326)){
+        if(inputSrsName.equals(EPSG_4326) || USE_LON_LAT){
             posStr = point.getY() + ", " + point.getX();
         } else {
             posStr = point.getX() + ", " + point.getY();
@@ -314,9 +321,19 @@ public class PortalsGeocodingHandler implements GeocodingHandler {
         List<Double> resultCoordinates = new ArrayList<Double>();
 
         String[] location = ((String) doc.get("location")).split(",");
+        
+        
 
-        Point transformPoint = transformPoint(Double.parseDouble(location[0]), Double.parseDouble(location[1]), EPSG_4326, srsName);
-
+        Point transformPoint;
+        if(USE_LON_LAT) {
+            transformPoint = transformPoint(Double.parseDouble(location[1]), Double.parseDouble(location[0]), EPSG_4326, srsName);
+        }  else {
+            transformPoint = transformPoint(Double.parseDouble(location[0]), Double.parseDouble(location[1]), EPSG_4326, srsName);
+        }
+        
+        LOG.info(String.format("Source coords: %s,%s. Transformed: %s", location[0], location[1], transformPoint.toString()));
+        
+        
         if (srsName.equals(EPSG_4326)) {
             resultCoordinates.add(transformPoint.getY());
             resultCoordinates.add(transformPoint.getX());

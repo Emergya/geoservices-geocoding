@@ -5,7 +5,7 @@
 
     <groupId>com.emergya.geoservices</groupId>
     <artifactId>geoservices-geocoding</artifactId>
-    <version>0.1</version>
+    <version>0.2</version>
     <packaging>pom</packaging>
     
     
